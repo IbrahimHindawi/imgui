@@ -1,8 +1,3 @@
-#define UNICODE
-#define WIN32_LEAN_AND_MEAN
-// #define _CONSOLE
-
-#include <windows.h>
 #include <SDL3/SDL.h>
 #include "core.h"
 
@@ -16,12 +11,7 @@ structdef(UIState) {
 
 UIState uistate;
 
-#ifdef _CONSOLE
 int main(int argc, char* argv[]) {
-#else
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int nShowCmd) {
-#endif
-
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
         return 1;
