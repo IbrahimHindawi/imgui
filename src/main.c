@@ -109,7 +109,7 @@ i32 main(i32 argc, char *argv[]) {
         return 1;
     }
     rect = (SDL_Rect) { .w = 32, .h = 32, };
-    r = g = b = 32;
+    r = g = b = 128;
 
     bool running = true;
     while (running) {
