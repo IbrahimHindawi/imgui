@@ -11,8 +11,8 @@ structdef(UIState) {
     i32 hotitem;
     i32 activeitem;
 };
-
 UIState uistate;
+u8 r, g, b;
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_EVERYTHING)) {
@@ -27,18 +27,34 @@ int main(int argc, char* argv[]) {
         SDL_Quit();
         return 1;
     }
-    SDL_Rect r = {
+    SDL_Rect rect = {
         .x = 0,
         .y = 0,
-        .w = 128,
-        .h = 128,
+        .w = 32,
+        .h = 32,
     };
+    r = g = 255;
+    b = 0;
 
     bool running = true;
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
+                case SDL_MOUSEMOTION:
+                    uistate.mousex = event.motion.x;
+                    uistate.mousey = event.motion.y;
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    if (event.button.button) {
+                        uistate.mousedown = true;
+                    }
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    if (event.button.button) {
+                        uistate.mousedown = false;
+                    }
+                    break;
                 case SDL_KEYUP:
                     switch (event.key.keysym.scancode) {
                         case SDL_SCANCODE_ESCAPE:
@@ -58,11 +74,15 @@ int main(int argc, char* argv[]) {
                     break;
             }
         }
+        printf("mouse: {%d, %d}\n", uistate.mousex, uistate.mousey);
+        rect.x = uistate.mousex;
+        rect.y = uistate.mousey;
+        g = 0xFF << (uistate.mousedown * 8);
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-        SDL_RenderFillRect(renderer, &r);
+        SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(renderer, &rect);
 
         SDL_RenderPresent(renderer);
     }
