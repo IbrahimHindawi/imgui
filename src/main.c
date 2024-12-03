@@ -1,4 +1,7 @@
-#include <SDL3/SDL.h>
+// #ifdef _WIN32
+// #define SDL_MAIN_HANDLED
+// #endif
+#include <SDL.h>
 #include "core.h"
 
 structdef(UIState) {
@@ -12,20 +15,19 @@ structdef(UIState) {
 UIState uistate;
 
 int main(int argc, char* argv[]) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (SDL_Init(SDL_INIT_EVERYTHING)) {
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
         return 1;
     }
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
-    printf("init\n");
 
-    if (!SDL_CreateWindowAndRenderer("SDL3", 640, 480, 0, &window, &renderer)) {
+    if (SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer)) {
         SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
         SDL_Quit();
         return 1;
     }
-    SDL_FRect r = {
+    SDL_Rect r = {
         .x = 0,
         .y = 0,
         .w = 128,
@@ -37,8 +39,8 @@ int main(int argc, char* argv[]) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-                case SDL_EVENT_KEY_UP:
-                    switch (event.key.scancode) {
+                case SDL_KEYUP:
+                    switch (event.key.keysym.scancode) {
                         case SDL_SCANCODE_ESCAPE:
                             running = false;
                             break;
@@ -49,7 +51,7 @@ int main(int argc, char* argv[]) {
                             break;
                     }
                     break;
-                case SDL_EVENT_QUIT:
+                case SDL_QUIT:
                     running = false;
                     break;
                 default:
