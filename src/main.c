@@ -4,6 +4,16 @@
 #include <SDL.h>
 #include "core.h"
 
+// If you're going to render widgets to the same
+// UI from different source files, you can avoid
+// ID collisions by defining IMGUI_SRC_ID before
+// this define block:
+#ifdef IMGUI_SRC_ID
+#define GEN_ID ((IMGUI_SRC_ID) + (__LINE__))
+#else
+#define GEN_ID (__LINE__)
+#endif
+
 structdef(UIState) {
     i32 mousex;
     i32 mousey;
@@ -99,8 +109,7 @@ i32 main(i32 argc, char *argv[]) {
         return 1;
     }
     rect = (SDL_Rect) { .w = 32, .h = 32, };
-    r = g = 255;
-    b = 0;
+    r = g = b = 32;
 
     bool running = true;
     while (running) {
@@ -141,24 +150,30 @@ i32 main(i32 argc, char *argv[]) {
             }
         }
         // clear screen
-        SDL_SetRenderDrawColor(renderer, 80, 80, 80, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
         imgui_prepare();
 
-        button(renderer, 2, 32, 32);
+        button(renderer, GEN_ID, 32 + 128 * 0, 32);
+        button(renderer, GEN_ID, 32 + 128 * 1, 32);
+        if (button(renderer, GEN_ID, 32 + 128 * 2, 32)) {
+            r += 28;
+            g += 12;
+            b += 2;
+        }
 
-        printf("mouse: {%d, %d}\n", uistate.mousex, uistate.mousey);
-        rect.x = uistate.mousex;
-        rect.y = uistate.mousey;
-        g = 0xFF << (uistate.mousedown * 8);
+        // printf("mouse: {%d, %d}\n", uistate.mousex, uistate.mousey);
+        rect.x = uistate.mousex; rect.y = uistate.mousey;
 
-        SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(renderer, 255, 0xFF << (uistate.mousedown * 8), 255, SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(renderer, &rect);
 
         imgui_finish();
 
         SDL_RenderPresent(renderer);
+
+        SDL_Delay(16);
     }
 
     SDL_DestroyRenderer(renderer);
