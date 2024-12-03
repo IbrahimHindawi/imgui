@@ -59,7 +59,6 @@ bool button(SDL_Renderer *renderer, int id, int x, int y) {
             uistate.activeitem = id;
         }
     }
-
     // Render button 
     // x, y, w, h, color
     // drawrect(x + 8, y + 8, 64, 48, 0);
@@ -90,8 +89,58 @@ bool button(SDL_Renderer *renderer, int id, int x, int y) {
     if (uistate.mousedown == 0 && uistate.hotitem == id && uistate.activeitem == id) {
         return true;
     }
-
     // Otherwise, no clicky.
+    return false;
+}
+
+// Simple scroll bar IMGUI widget
+bool slider(SDL_Renderer *renderer, int id, int x, int y, int max, int *value) {
+    SDL_Rect rect = { .x = x, .y = y, .w = 32, .h = 256, };
+    // Calculate mouse cursor's relative y offset
+    int ypos = ((256 - 16) * *value) / max;
+
+    // Check for hotness
+    if (regionhit(x+8, y+8, 32, 256)) {
+        uistate.hotitem = id;
+        if (uistate.activeitem == 0 && uistate.mousedown) {
+            uistate.activeitem = id;
+        }
+    }
+    // Render the scrollbar
+    // drawrect(x, y, 32, 256+16, 0x777777);
+    SDL_SetRenderDrawColor(renderer, 64, 64, 64, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer, &rect);
+
+    if (uistate.activeitem == id || uistate.hotitem == id) {
+        // drawrect(x+8, y+8 + ypos, 16, 16, 0xffffff);
+        rect.x += 8; rect.y += 8 + ypos;
+        rect.w = rect.h = 16;
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(renderer, &rect);
+        rect.x -= 8; rect.y -= 8 + ypos;
+    } else {
+        // drawrect(x+8, y+8 + ypos, 16, 16, 0xaaaaaa);
+        rect.x += 8; rect.y += 8 + ypos;
+        rect.w = rect.h = 16;
+        SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(renderer, &rect);
+        rect.x -= 8; rect.y -= 8 + ypos;
+    }
+    // Update widget value
+    if (uistate.activeitem == id) {
+        int mousepos = uistate.mousey - (y + 8);
+        if (mousepos < 0) {
+            mousepos = 0;
+        }
+        if (mousepos > 255) {
+            mousepos = 255;
+        }
+        int v = (mousepos * max) / 255;
+        if (v != *value) {
+          *value = v;
+          return true;
+        }
+    }
     return false;
 }
 
@@ -161,6 +210,11 @@ i32 main(i32 argc, char *argv[]) {
             r += 28;
             g += 12;
             b += 2;
+        }
+        static int bgcolor = 13;
+        int slidervalue = bgcolor & 0xff;
+        if (slider(renderer, GEN_ID, 500, 40, 255, &slidervalue)) {
+            bgcolor = (bgcolor & 0xffff00) | slidervalue;
         }
 
         // printf("mouse: {%d, %d}\n", uistate.mousex, uistate.mousey);
